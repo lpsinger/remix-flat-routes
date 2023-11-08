@@ -1,3 +1,4 @@
+import shuffle from 'lodash/shuffle'
 import { defineRoutes } from '@remix-run/dev/dist/config/routes'
 import type { RouteManifest } from '../src/index'
 import flatRoutes from '../src/index'
@@ -144,6 +145,7 @@ describe('define routes', () => {
 })
 
 function visitFilesFromArray(files: string[]) {
+  files = shuffle(files)
   return (_dir: string, visitor: (file: string) => void, _baseDir?: string) => {
     files.forEach(file => {
       visitor(file)

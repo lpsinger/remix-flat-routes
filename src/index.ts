@@ -126,6 +126,7 @@ function _flatRoutes(
   let visitFiles = options.visitFiles ?? defaultVisitFiles
   let routeRegex = options.routeRegex ?? defaultOptions.routeRegex!
 
+  let routeInfos: ReturnType<typeof getRouteInfo>[] = []
   for (let routeDir of routeDirs) {
     visitFiles(path.join(appDir, routeDir), file => {
       if (
@@ -138,13 +139,20 @@ function _flatRoutes(
       }
 
       if (isRouteModuleFile(file, routeRegex)) {
-        let routeInfo = getRouteInfo(routeDir, file, options!)
-        routeMap.set(routeInfo.id, routeInfo)
-        nameMap.set(routeInfo.name, routeInfo)
+        routeInfos.push(getRouteInfo(routeDir, file, options!))
         return
       }
     })
   }
+
+  // Sort the routes by ID so that parents are assigned reproducibly.
+  routeInfos.sort(({id: a}, {id: b}) => a.localeCompare(b))
+
+  for (let routeInfo of routeInfos) {
+    routeMap.set(routeInfo.id, routeInfo)
+    nameMap.set(routeInfo.name, routeInfo)
+  }
+
   // update parentIds for all routes
   Array.from(routeMap.values()).forEach(routeInfo => {
     let parentId = findParentRouteId(routeInfo, nameMap)
